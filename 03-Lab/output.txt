@@ -1,0 +1,412 @@
+int <-> keyword
+main <-> identifier
+( <-> special character
+int <-> keyword
+argc <-> identifier
+, <-> special character
+char <-> keyword
+* <-> operator
+* <-> operator
+argv <-> identifier
+) <-> special character
+{ <-> special character
+FILE <-> identifier
+* <-> operator
+fpin <-> identifier
+, <-> special character
+* <-> operator
+fpout <-> identifier
+; <-> special character
+char <-> keyword
+buf <-> identifier
+[ <-> special character
+2000 <-> constant
+] <-> special character
+, <-> special character
+* <-> operator
+token <-> identifier
+; <-> special character
+int <-> keyword
+lines <-> identifier
+, <-> special character
+i <-> identifier
+= <-> operator
+1 <-> constant
+, <-> special character
+j <-> identifier
+, <-> special character
+k <-> identifier
+; <-> special character
+double <-> keyword
+array <-> identifier
+[ <-> special character
+2000 <-> constant
+] <-> special character
+[ <-> special character
+3 <-> constant
+] <-> special character
+; <-> special character
+if <-> keyword
+( <-> special character
+argc <-> identifier
+!= <-> operator
+3 <-> constant
+) <-> special character
+{ <-> special character
+fprintf <-> identifier
+( <-> special character
+stderr <-> identifier
+, <-> special character
+"Usage: ./a.out <InputFile> <OutputFile>\n" <-> string
+) <-> special character
+; <-> special character
+return <-> keyword
+0 <-> constant
+; <-> special character
+} <-> special character
+fpin <-> identifier
+= <-> operator
+fopen <-> identifier
+( <-> special character
+argv <-> identifier
+[ <-> special character
+1 <-> constant
+] <-> special character
+, <-> special character
+"r" <-> string
+) <-> special character
+; <-> special character
+fpout <-> identifier
+= <-> operator
+fopen <-> identifier
+( <-> special character
+argv <-> identifier
+[ <-> special character
+2 <-> constant
+] <-> special character
+, <-> special character
+"w" <-> string
+) <-> special character
+; <-> special character
+if <-> keyword
+( <-> special character
+fpin <-> identifier
+== <-> operator
+NULL <-> identifier
+) <-> special character
+{ <-> special character
+fprintf <-> identifier
+( <-> special character
+stderr <-> identifier
+, <-> special character
+"Error: Invalid Input Filename\n" <-> string
+) <-> special character
+; <-> special character
+return <-> keyword
+0 <-> constant
+; <-> special character
+} <-> special character
+fgets <-> identifier
+( <-> special character
+buf <-> identifier
+, <-> special character
+2000 <-> constant
+, <-> special character
+fpin <-> identifier
+) <-> special character
+; <-> special character
+token <-> identifier
+= <-> operator
+strtok <-> identifier
+( <-> special character
+buf <-> identifier
+, <-> special character
+" \t" <-> string
+) <-> special character
+; <-> special character
+lines <-> identifier
+= <-> operator
+atoi <-> identifier
+( <-> special character
+token <-> identifier
+) <-> special character
+; <-> special character
+printf <-> identifier
+( <-> special character
+"%d\n" <-> string
+, <-> special character
+lines <-> identifier
+) <-> special character
+; <-> special character
+while <-> keyword
+( <-> special character
+fgets <-> identifier
+( <-> special character
+buf <-> identifier
+, <-> special character
+2000 <-> constant
+, <-> special character
+fpin <-> identifier
+) <-> special character
+!= <-> operator
+NULL <-> identifier
+) <-> special character
+{ <-> special character
+token <-> identifier
+= <-> operator
+strtok <-> identifier
+( <-> special character
+buf <-> identifier
+, <-> special character
+" \t" <-> string
+) <-> special character
+; <-> special character
+token <-> identifier
+= <-> operator
+strtok <-> identifier
+( <-> special character
+NULL <-> identifier
+, <-> special character
+" \t" <-> string
+) <-> special character
+; <-> special character
+j <-> identifier
+= <-> operator
+1 <-> constant
+; <-> special character
+while <-> keyword
+( <-> special character
+token <-> identifier
+!= <-> operator
+NULL <-> identifier
+) <-> special character
+{ <-> special character
+array <-> identifier
+[ <-> special character
+i <-> identifier
+] <-> special character
+[ <-> special character
+j <-> identifier
+] <-> special character
+= <-> operator
+atof <-> identifier
+( <-> special character
+token <-> identifier
+) <-> special character
+; <-> special character
+token <-> identifier
+= <-> operator
+strtok <-> identifier
+( <-> special character
+NULL <-> identifier
+, <-> special character
+" \t" <-> string
+) <-> special character
+; <-> special character
+j <-> identifier
+++ <-> operator
+; <-> special character
+} <-> special character
+i <-> identifier
+++ <-> operator
+; <-> special character
+} <-> special character
+printf <-> identifier
+( <-> special character
+"numer of nodes in the given test file = %d\n" <-> string
+, <-> special character
+lines <-> identifier
+) <-> special character
+; <-> special character
+double <-> keyword
+temp <-> identifier
+; <-> special character
+int <-> keyword
+dist <-> identifier
+[ <-> special character
+lines <-> identifier
++ <-> operator
+1 <-> constant
+] <-> special character
+[ <-> special character
+lines <-> identifier
++ <-> operator
+1 <-> constant
+] <-> special character
+; <-> special character
+for <-> keyword
+( <-> special character
+i <-> identifier
+= <-> operator
+1 <-> constant
+; <-> special character
+i <-> identifier
+<= <-> operator
+lines <-> identifier
+; <-> special character
+i <-> identifier
+++ <-> operator
+) <-> special character
+for <-> keyword
+( <-> special character
+j <-> identifier
+= <-> operator
+1 <-> constant
+; <-> special character
+j <-> identifier
+<= <-> operator
+lines <-> identifier
+; <-> special character
+j <-> identifier
+++ <-> operator
+) <-> special character
+{ <-> special character
+temp <-> identifier
+= <-> operator
+0 <-> constant
+; <-> special character
+for <-> keyword
+( <-> special character
+k <-> identifier
+= <-> operator
+1 <-> constant
+; <-> special character
+k <-> identifier
+<= <-> operator
+2 <-> constant
+; <-> special character
+k <-> identifier
+++ <-> operator
+) <-> special character
+temp <-> identifier
++= <-> operator
+( <-> special character
+array <-> identifier
+[ <-> special character
+i <-> identifier
+] <-> special character
+[ <-> special character
+k <-> identifier
+] <-> special character
+- <-> operator
+array <-> identifier
+[ <-> special character
+j <-> identifier
+] <-> special character
+[ <-> special character
+k <-> identifier
+] <-> special character
+) <-> special character
+* <-> operator
+( <-> special character
+array <-> identifier
+[ <-> special character
+i <-> identifier
+] <-> special character
+[ <-> special character
+k <-> identifier
+] <-> special character
+- <-> operator
+array <-> identifier
+[ <-> special character
+j <-> identifier
+] <-> special character
+[ <-> special character
+k <-> identifier
+] <-> special character
+) <-> special character
+; <-> special character
+dist <-> identifier
+[ <-> special character
+i <-> identifier
+] <-> special character
+[ <-> special character
+j <-> identifier
+] <-> special character
+= <-> operator
+( <-> special character
+int <-> keyword
+) <-> special character
+( <-> special character
+sqrt <-> identifier
+( <-> special character
+temp <-> identifier
+) <-> special character
++ <-> operator
+0.5 <-> constant
+) <-> special character
+; <-> special character
+} <-> special character
+fprintf <-> identifier
+( <-> special character
+fpout <-> identifier
+, <-> special character
+"%d\n" <-> string
+, <-> special character
+lines <-> identifier
+) <-> special character
+; <-> special character
+for <-> keyword
+( <-> special character
+i <-> identifier
+= <-> operator
+1 <-> constant
+; <-> special character
+i <-> identifier
+<= <-> operator
+lines <-> identifier
+; <-> special character
+i <-> identifier
+++ <-> operator
+) <-> special character
+{ <-> special character
+for <-> keyword
+( <-> special character
+j <-> identifier
+= <-> operator
+1 <-> constant
+; <-> special character
+j <-> identifier
+<= <-> operator
+lines <-> identifier
+; <-> special character
+j <-> identifier
+++ <-> operator
+) <-> special character
+fprintf <-> identifier
+( <-> special character
+fpout <-> identifier
+, <-> special character
+"%d   " <-> string
+, <-> special character
+dist <-> identifier
+[ <-> special character
+i <-> identifier
+] <-> special character
+[ <-> special character
+j <-> identifier
+] <-> special character
+) <-> special character
+; <-> special character
+fprintf <-> identifier
+( <-> special character
+fpout <-> identifier
+, <-> special character
+"\n" <-> string
+) <-> special character
+; <-> special character
+} <-> special character
+fclose <-> identifier
+( <-> special character
+fpin <-> identifier
+) <-> special character
+; <-> special character
+fclose <-> identifier
+( <-> special character
+fpout <-> identifier
+) <-> special character
+; <-> special character
+return <-> keyword
+0 <-> constant
+; <-> special character
+} <-> special character
