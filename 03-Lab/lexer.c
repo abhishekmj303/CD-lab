@@ -378,6 +378,8 @@ int isDelimiter(const char c)
 
 void lexicalAnalysis(FILE *fin, FILE *fout)
 {
+    int indentifier_count = 0, keyword_count = 0, constant_count = 0, operator_count = 0, spchar_count = 0, string_count = 0;
+    int line_no = 1;
     char line[MAX_STRING_SIZE];
     while (fgets(line, MAX_STRING_SIZE, fin) != NULL)
     {
@@ -422,14 +424,16 @@ void lexicalAnalysis(FILE *fin, FILE *fout)
                         token[token_index++] = line[i++];
                     token[token_index++] = line[i++];
                     token[token_index] = '\0';
-                    fprintf(fout, "%s <-> string\n", token);
+                    fprintf(fout, "Line %d: %s <-> string\n", line_no, token);
+                    string_count++;
                     token_index = 0;
                     state = 0;
                     break;
                 case 2: // special character
                     token[token_index++] = line[i++];
                     token[token_index] = '\0';
-                    fprintf(fout, "%s <-> special character\n", token);
+                    fprintf(fout, "Line %d: %s <-> special character\n", line_no, token);
+                    spchar_count++;
                     token_index = 0;
                     state = 0;
                     break;
@@ -439,7 +443,8 @@ void lexicalAnalysis(FILE *fin, FILE *fout)
                     {
                         strncpy(token, line+i, end_const);
                         token[end_const] = '\0';
-                        fprintf(fout, "%s <-> constant\n", token);
+                        fprintf(fout, "Line %d: %s <-> constant\n", line_no, token);
+                        constant_count++;
                         i += end_const;
                         token_index = 0;
                         state = 0;
@@ -457,9 +462,15 @@ void lexicalAnalysis(FILE *fin, FILE *fout)
                         strncpy(token, line+i, end_id);
                         token[end_id] = '\0';
                         if (isKeyword(token))
-                            fprintf(fout, "%s <-> keyword\n", token);
+                        {
+                            fprintf(fout, "Line %d: %s <-> keyword\n", line_no, token);
+                            keyword_count++;
+                        }
                         else
-                            fprintf(fout, "%s <-> identifier\n", token);
+                        {
+                            fprintf(fout, "Line %d: %s <-> identifier\n", line_no, token);
+                            indentifier_count++;
+                        }
                         i += end_id;
                         token_index = 0;
                         state = 0;
@@ -475,7 +486,10 @@ void lexicalAnalysis(FILE *fin, FILE *fout)
                         token[token_index++] = line[i++];
                     token[token_index] = '\0';
                     if (isOperator(token))
-                        fprintf(fout, "%s <-> operator\n", token);
+                    {
+                        fprintf(fout, "Line %d: %s <-> operator\n", line_no, token);
+                        operator_count++;
+                    }
                     else
                     {
                         for (int j = 0; j < strlen(token); j++)
@@ -484,9 +498,12 @@ void lexicalAnalysis(FILE *fin, FILE *fout)
                             temp[0] = token[j];
                             temp[1] = '\0';
                             if (isOperator(temp))
-                                fprintf(fout, "%s <-> operator\n", temp);
+                            {
+                                fprintf(fout, "Line %d: %s <-> operator\n", line_no, temp);
+                                operator_count++;
+                            }
                             else
-                                fprintf(fout, "%s <-> Invalid\n", temp);
+                                fprintf(fout, "Line %d: %s <-> Invalid\n", line_no, temp);
                         }
                     }
                     token_index = 0;
@@ -494,7 +511,15 @@ void lexicalAnalysis(FILE *fin, FILE *fout)
                     break;
             }
         }
+        line_no++;
     }
+    printf("Number of identifiers: %d\n", indentifier_count);
+    printf("Number of keywords: %d\n", keyword_count);
+    printf("Number of constants: %d\n", constant_count);
+    printf("Number of operators: %d\n", operator_count);
+    printf("Number of special characters: %d\n", spchar_count);
+    printf("Number of strings: %d\n", string_count);
+    printf("Total: %d\n", indentifier_count + keyword_count + constant_count + operator_count + spchar_count + string_count);
 }
 
 int main(int argc, char *argv[])
