@@ -41,6 +41,7 @@ void printCFG(CFG cfg)
     printf("Start: %c\n", cfg.start);
     printf("Non-terminals: %s\n", cfg.non_terms);
     printf("Terminals: %s\n", cfg.terms);
+    // printf("All: %s\n", cfg.all);
     printf("Rules:\n");
     for (int i = 0; i < cfg.num_rules; i++)
     {
@@ -53,13 +54,36 @@ void printCFG(CFG cfg)
     }
 }
 
-void strunion(char *dest, char *src)
+void printFirstFollow(Set ff[], int n)
 {
+    printf("\nFirsts Set:\n");
+    for (int i = 0; i < n; i++)
+    {
+        if (ff[i].x == '#' || ff[i].x == '$')
+            continue;
+        printf("%c: %s\n", ff[i].x, ff[i].first);
+    }
+    printf("\nFollows Set:\n");
+    for (int i = 0; i < n; i++)
+    {
+        if (ff[i].x == '#' || ff[i].x == '$')
+            continue;
+        printf("%c: %s\n", ff[i].x, ff[i].follow);
+    }
+}
+
+int strunion(char *dest, char *src)
+{
+    int changed = 0;
     for (int i = 0; i < strlen(src); i++)
     {
         if (strchr(dest, src[i]) == NULL)
+        {
             strncat(dest, src + i, 1);
+            changed = 1;
+        }
     }
+    return changed;
 }
 
 char *first_set(CFG *cfg, char *prod)
@@ -97,14 +121,60 @@ char *first_set(CFG *cfg, char *prod)
     return ret;
 }
 
-void follow_set(CFG *cfg, Set ff[], char nt, char *prod)
+void follow(CFG cfg, Set ff[MAX])
 {
-    for (int i = 0; i < strlen(prod)-1; i++)
+    int n_all = strlen(cfg.all);
+
+    for (int i = 0; i < n_all; i++) // for each (A ∈ N) FOLLOW(A) = ∅
     {
-        if (isupper(prod[i])) // non-terminal
+        ff[i].x = cfg.all[i];
+        if(ff[i].x == cfg.start)
+            ff[i].follow[0] = '$';
+        else
+            strcpy(ff[i].follow, "");
+    }
+
+    int changed = 1;
+    while(changed)
+    {
+        changed = 0;
+        for(int i = 0; i < cfg.num_rules; i++)
         {
-            int fl_n = strchr(cfg->non_terms, prod[i]) - cfg->non_terms;
-            strunion(ff[fl_n].follow, ff[fl_n+1].first);
+            for(int j = 0; j < cfg.rules[i].num_prods; j++)
+            {
+                char non_term = cfg.rules[i].non_term;
+                char *prod = cfg.rules[i].prods[j];
+
+                int index = strchr(cfg.all, non_term) - cfg.all;
+                int k = strlen(prod) - 1;
+
+                int x_index = strchr(cfg.all, prod[k]) - cfg.all;
+                changed |= strunion(ff[x_index].follow, ff[index].follow);
+
+                char *rest = ff[index].follow;
+                for(k = strlen(prod)-1; k >= 1; k--)
+                {
+                    int x_i_index = strchr(cfg.all, prod[k]) - cfg.all;
+                    char *x_i_first_set = ff[x_i_index].first;
+                    char x_i_1 = prod[k - 1];
+                    int x_i_1_index = strchr(cfg.all, x_i_1) - cfg.all;
+
+                    char* eps_i = strchr(x_i_first_set, '#');
+                    if(eps_i != NULL)
+                    {
+                        *eps_i = '\0';   // remove '#'
+                        strcat(x_i_first_set, eps_i+1);
+                        changed |= strunion(ff[x_i_1_index].follow, x_i_first_set);
+                        changed |= strunion(ff[x_i_1_index].follow, rest);
+                        strcat(x_i_first_set, "#");
+                    }
+                    else
+                    {
+                        changed |= strunion(ff[x_i_1_index].follow, x_i_first_set);
+                    }
+                    rest = ff[x_i_index].follow;
+                }
+            }
         }
     }
 }
@@ -115,7 +185,6 @@ void first_follow(CFG cfg)
     int nt = strlen(cfg.non_terms);
     int t = strlen(cfg.terms);
 
-    printf("Firsts Set:\n");
     for (int i = 0; i < nt; i++)
     {
         Rule *rule = &cfg.rules[i];
@@ -124,7 +193,6 @@ void first_follow(CFG cfg)
         {
             strunion(ff[i].first, first_set(&cfg, rule->prods[j]));
         }
-        printf("%c: %s\n", ff[i].x, ff[i].first);
     }
 
     for (int i = 0; i < t; i++)
@@ -132,18 +200,20 @@ void first_follow(CFG cfg)
         int ff_idx = nt + i;
         ff[ff_idx].x = cfg.terms[i];
         ff[ff_idx].first[0] = cfg.terms[i];
-        printf("%c: %s\n", ff[ff_idx].x, ff[ff_idx].first);
     }
 
+    follow(cfg, ff);
+
+    printFirstFollow(ff, nt + t);
 }
 
 int main(int argc, char *argv[])
 {
-    // if (argc < 2) {
-    //     printf("Usage: %s <CFG-input-file>\n", argv[0]);
-    //     return 1;
-    // }
-    argv[1] = "CFG";
+     if (argc < 2) {
+         printf("Usage: %s <CFG-input-file>\n", argv[0]);
+         return 1;
+     }
+//    argv[1] = "CFG";
 
     FILE *fp = fopen(argv[1], "r");
     if (fp == NULL) {
@@ -178,6 +248,8 @@ int main(int argc, char *argv[])
     }
     cfg.start = cfg.rules[0].non_term;
     cfg.num_rules = end;
+    strcpy(cfg.all, cfg.non_terms);
+    strcat(cfg.all, cfg.terms);
 
     printCFG(cfg);
 
