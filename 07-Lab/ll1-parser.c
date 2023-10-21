@@ -1,12 +1,3 @@
-// Example CFG:
-// V = S$
-// S = aAS
-// S = #
-// A = ba
-// A = SB
-// B = cA
-// B = S
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,7 +26,13 @@ typedef struct {
     char follow[MAX];
 } Set;
 
-void printCFG(CFG cfg)
+
+CFG cfg;
+Set ff[MAX];
+char table[MAX][MAX][MAX];
+
+
+void print_cfg()
 {
     printf("CFG:\n");
     printf("Start: %c\n", cfg.start);
@@ -54,8 +51,10 @@ void printCFG(CFG cfg)
     }
 }
 
-void printFirstFollow(Set ff[], int n)
+void print_first_follow()
 {
+    int n = strlen(cfg.all);
+
     printf("\nFirsts Set:\n");
     for (int i = 0; i < n; i++)
     {
@@ -63,6 +62,7 @@ void printFirstFollow(Set ff[], int n)
             continue;
         printf("%c: %s\n", ff[i].x, ff[i].first);
     }
+
     printf("\nFollows Set:\n");
     for (int i = 0; i < n; i++)
     {
@@ -72,7 +72,7 @@ void printFirstFollow(Set ff[], int n)
     }
 }
 
-void printLL1Table(char table[MAX][MAX][MAX], CFG cfg)
+void print_ll1_table()
 {
     int max_width(char table[MAX][MAX][MAX], int r, int c)
     {
@@ -152,48 +152,100 @@ int strunion(char *dest, char *src)
     return changed;
 }
 
-char *first_set(CFG *cfg, char *prod)
+char *strrmchr(char *str, char c)
 {
-    char first[MAX];
-    memset(first, 0, sizeof(first));
+    char *c_ptr = strchr(str, c);
+    if (c_ptr == NULL)
+        return str;
 
-    for (int i = 0; i < strlen(prod); i++)
-    {
-        int next = strlen(first);
-        if (isupper(prod[i])) // non-terminal
-        {
-            int n = strchr(cfg->non_terms, prod[i]) - cfg->non_terms;
-            for (int j = 0; j < cfg->rules[n].num_prods; j++)
-            {
-                strunion(first, first_set(cfg, cfg->rules[n].prods[j]));
-            }
+    char *res = (char *)malloc(strlen(str)+1);
 
-            // If epsilon is in first set, add next terms
-            if (strchr(first+next, '#') == NULL)
-                break;
-        }
-        else // terminal
-        {
-            first[i] = prod[i];
+    *c_ptr = '\0';
+    strcat(res, str);
+    strcat(res, c_ptr+1);
+    *c_ptr = c;
 
-            // If terminal is epsilon, add next terms
-            if (prod[i] != '#')
-                break;
-        }
-    }
-
-    char *ret = malloc(sizeof(first));
-    strcpy(ret, first);
-    return ret;
+    return res;
 }
 
-void follow(CFG cfg, Set ff[MAX])
+int indexof(char *str, char c)
+{
+    return strchr(str, c) - str;
+}
+
+char *first(char x)
+{
+    int idx = indexof(cfg.all, x);
+    return ff[idx].first;
+}
+
+char *follow(char x)
+{
+    int idx = indexof(cfg.all, x);
+    return ff[idx].follow;
+}
+
+char *rm_epsilon(char *str)
+{
+    return strrmchr(str, '#');
+}
+
+int is_epsilon_in(char *str)
+{
+    if (strchr(str, '#'))
+        return 1;
+    else
+        return 0;
+}
+
+void compute_first()
+{
+    int n_all = strlen(cfg.all);
+
+    for (int i = 0; i < n_all; i++)
+    {
+        if (!isupper(ff[i].x)) // for each (a ∈ T) FIRST(a) = {a}
+            ff[i].first[0] = ff[i].x;
+        else                   // for each (A ∈ N) FIRST(A) = ∅
+            strcpy(ff[i].first, "");
+    }
+
+    int changed = 1;
+    while (changed)
+    {
+        changed = 0;
+        for(int i = 0; i < cfg.num_rules; i++)
+        {
+            for(int j = 0; j < cfg.rules[i].num_prods; j++)
+            {
+                char A = cfg.rules[i].non_term;  // A
+                char *X = cfg.rules[i].prods[j]; // X0,X1,X2,...,Xn-1
+                char *first_A = first(A);
+
+                int i = 0, end = strlen(X)-1;
+
+                changed |= strunion(first_A, rm_epsilon(first(X[i])));
+
+                while (is_epsilon_in(first(X[i])) && i < end)
+                {
+                    changed |= strunion(first_A, rm_epsilon(first(X[i+1])));
+                    i++;
+                }
+                if (i == end && is_epsilon_in(first(X[end])))
+                {
+                    changed |= strunion(first_A, "#");
+                }
+            }
+        }
+    }
+}
+
+void compute_follow()
 {
     int n_all = strlen(cfg.all);
 
     for (int i = 0; i < n_all; i++) // for each (A ∈ N) FOLLOW(A) = ∅
     {
-        ff[i].x = cfg.all[i];
         if(ff[i].x == cfg.start)
             ff[i].follow[0] = '$';
         else
@@ -208,74 +260,49 @@ void follow(CFG cfg, Set ff[MAX])
         {
             for(int j = 0; j < cfg.rules[i].num_prods; j++)
             {
-                char non_term = cfg.rules[i].non_term;
-                char *prod = cfg.rules[i].prods[j];
+                char A = cfg.rules[i].non_term;  // A
+                char *X = cfg.rules[i].prods[j]; // X0,X1,X2,...,Xn-1
 
-                int index = strchr(cfg.all, non_term) - cfg.all;
-                int k = strlen(prod) - 1;
+                int i = strlen(X) - 1;
 
-                int x_index = strchr(cfg.all, prod[k]) - cfg.all;
-                changed |= strunion(ff[x_index].follow, ff[index].follow);
+                changed |= strunion(follow(X[i]), follow(A));
+                char *rest = follow(A);
 
-                char *rest = ff[index].follow;
-                for(k = strlen(prod)-1; k >= 1; k--)
+                for (; i > 0; i--)
                 {
-                    int x_i_index = strchr(cfg.all, prod[k]) - cfg.all;
-                    char *x_i_first_set = ff[x_i_index].first;
-                    char x_i_1 = prod[k - 1];
-                    int x_i_1_index = strchr(cfg.all, x_i_1) - cfg.all;
+                    char *follow_Xi1 = follow(X[i-1]);
+                    char *first_Xi = first(X[i]);
 
-                    char* eps_i = strchr(x_i_first_set, '#');
-                    if(eps_i != NULL)
+                    if (is_epsilon_in(first_Xi))
                     {
-                        *eps_i = '\0';   // remove '#'
-                        strcat(x_i_first_set, eps_i+1);
-                        changed |= strunion(ff[x_i_1_index].follow, x_i_first_set);
-                        changed |= strunion(ff[x_i_1_index].follow, rest);
-                        strcat(x_i_first_set, "#");
+                        changed |= strunion(follow_Xi1, rm_epsilon(first_Xi));
+                        changed |= strunion(follow_Xi1, rest);
                     }
                     else
                     {
-                        changed |= strunion(ff[x_i_1_index].follow, x_i_first_set);
+                        changed |= strunion(follow_Xi1, first_Xi);
                     }
-                    rest = ff[x_i_index].follow;
+                    rest = follow_Xi1;
                 }
             }
         }
     }
 }
 
-void first_follow(CFG cfg, Set ff[MAX])
+void compute_first_follow()
 {
-    int nt = strlen(cfg.non_terms);
-    int t = strlen(cfg.terms);
-
-    for (int i = 0; i < nt; i++)
+    for (int i = 0; i < strlen(cfg.all); i++)
     {
-        Rule *rule = &cfg.rules[i];
-        ff[i].x = rule->non_term;
-        for (int j = 0; j < rule->num_prods; j++)
-        {
-            strunion(ff[i].first, first_set(&cfg, rule->prods[j]));
-        }
+        ff[i].x = cfg.all[i];
     }
 
-    for (int i = 0; i < t; i++)
-    {
-        int ff_idx = nt + i;
-        ff[ff_idx].x = cfg.terms[i];
-        ff[ff_idx].first[0] = cfg.terms[i];
-    }
-
-    follow(cfg, ff);
-
-    printFirstFollow(ff, nt + t);
+    compute_first();
+    compute_follow();
+    print_first_follow();
 }
 
-int ll1_table(CFG cfg, Set ff[MAX], char table[MAX][MAX][MAX])
+int ll1_table()
 {
-//    int r = strlen(cfg.non_terms);
-//    int c = strlen(cfg.terms);
     char non_term;
     char *prod;
     char dirsym[MAX] = {0};
@@ -333,21 +360,19 @@ int ll1_table(CFG cfg, Set ff[MAX], char table[MAX][MAX][MAX])
         }
     }
 
-    printLL1Table(table, cfg);
+    print_ll1_table();
 
     return result;
 }
 
 
-void ll1_parser(CFG cfg)
+void ll1_parser()
 {
     // First and Follow sets
-    Set ff[MAX];
-    first_follow(cfg, ff);
+    compute_first_follow();
 
     // LL(1) Table
-    char table[MAX][MAX][MAX];
-    int result = ll1_table(cfg, ff, table);
+    int result = ll1_table();
     if (result)
         printf("\nGiven grammar is LL(1)\n");
     else
@@ -372,7 +397,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    CFG cfg;
     int n = 0, end = 0;
     char line[MAX];
     while (fgets(line, MAX, fp) != NULL)
@@ -402,11 +426,11 @@ int main(int argc, char *argv[])
     strcpy(cfg.all, cfg.non_terms);
     strcat(cfg.all, cfg.terms);
 
-    printCFG(cfg);
+    print_cfg();
 
     fclose(fp);
 
-    ll1_parser(cfg);
+    ll1_parser();
 
     return 0;
 }
