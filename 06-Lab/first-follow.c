@@ -86,6 +86,11 @@ int strunion(char *dest, char *src)
     return changed;
 }
 
+int indexof(char *str, char c)
+{
+    return strchr(str, c) - str;
+}
+
 char *first_set(CFG *cfg, char *prod)
 {
     char first[MAX];
@@ -96,7 +101,7 @@ char *first_set(CFG *cfg, char *prod)
         int next = strlen(first);
         if (isupper(prod[i])) // non-terminal
         {
-            int n = strchr(cfg->non_terms, prod[i]) - cfg->non_terms;
+            int n = indexof(cfg->non_terms, prod[i]);
             for (int j = 0; j < cfg->rules[n].num_prods; j++)
             {
                 strunion(first, first_set(cfg, cfg->rules[n].prods[j]));
@@ -145,19 +150,19 @@ void follow(CFG cfg, Set ff[MAX])
                 char non_term = cfg.rules[i].non_term;
                 char *prod = cfg.rules[i].prods[j];
 
-                int index = strchr(cfg.all, non_term) - cfg.all;
+                int index = indexof(cfg.all, non_term);
                 int k = strlen(prod) - 1;
 
-                int x_index = strchr(cfg.all, prod[k]) - cfg.all;
+                int x_index = indexof(cfg.all, prod[k]);
                 changed |= strunion(ff[x_index].follow, ff[index].follow);
 
                 char *rest = ff[index].follow;
                 for(k = strlen(prod)-1; k >= 1; k--)
                 {
-                    int x_i_index = strchr(cfg.all, prod[k]) - cfg.all;
+                    int x_i_index = indexof(cfg.all, prod[k]);
                     char *x_i_first_set = ff[x_i_index].first;
                     char x_i_1 = prod[k - 1];
-                    int x_i_1_index = strchr(cfg.all, x_i_1) - cfg.all;
+                    int x_i_1_index = indexof(cfg.all, x_i_1);
 
                     char* eps_i = strchr(x_i_first_set, '#');
                     if(eps_i != NULL)
@@ -234,7 +239,7 @@ int main(int argc, char *argv[])
             cfg.rules[end].num_prods = 0;
             end++;
         }
-        n = strchr(cfg.non_terms, token[0]) - cfg.non_terms;
+        n = indexof(cfg.non_terms, token[0]);
 
         // Production
         token = strtok(NULL, " =\n");

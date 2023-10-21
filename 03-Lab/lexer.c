@@ -492,7 +492,7 @@ void lexicalAnalysis(FILE *fin, FILE *fout)
                     }
                     else
                     {
-                        for (int j = 0; j < strlen(token); j++)
+                        for (int j = 0; j < strlen(token); j++) // for ** operator
                         {
                             char temp[2];
                             temp[0] = token[j];
