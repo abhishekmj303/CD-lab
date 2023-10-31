@@ -1,0 +1,7 @@
+V = S$
+S = aAS
+S = c
+A = ba
+A = SB
+B = bA
+B = S
