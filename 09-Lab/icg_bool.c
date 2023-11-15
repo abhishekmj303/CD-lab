@@ -155,23 +155,18 @@ char *infix_to_postfix(char *infix)
         if (isalpha(infix[i]))
         {
             // Get the expression string
-            char *expr_str = (char *) calloc(n+1, n+1);
-            int k = 0;
-            do
-            {
-                expr_str[k++] = infix[i++];
-            } while (i < n && !is_bool_op(infix[i]));
-            if (i < n && isalpha(infix[i]))
-                expr_str[k] = infix[i];
-            else
-                i--;
-            
             // Store it as a key-value pair
-            printf("%c -> %s\n", expr_num, expr_str);
             expressions[e].key = expr_num;
-            strcpy(expressions[e].value, expr_str);
+            int k = 0;
+            while (i < n && !is_bool_op(infix[i]))
+            {
+                expressions[e].value[k++] = infix[i++];
+            }
+            expressions[e].value[k] = '\0';
+            i--;
+            
+            printf("%c -> %s\n", expressions[e].key, expressions[e].value);
             e++;
-            free(expr_str);
 
             postfix[j++] = expr_num++;
         }
@@ -226,9 +221,8 @@ Pair *condition_code(int expr_key, int *l)
     inter_code[t].true_l = *l;
     inter_code[t].false_l = *l+1;
     *l += 2;
-    t++;
 
-    return &inter_code[t-1];
+    return &inter_code[t++];
 }
 
 void three_address_code(char *postfix)
@@ -281,10 +275,6 @@ void three_address_code(char *postfix)
     char *final_code = inter_code[t-1].value;
     sprintf(final_code+strlen(final_code), "L%d: L%d: next code\n", l-2, l-1);
 
-    // for (int i = 0; i < t; i++)
-    // {
-    //     printf("%s\n", inter_code[i].value);
-    // }
     printf("%s", final_code);
 }
 
